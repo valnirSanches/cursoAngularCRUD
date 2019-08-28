@@ -1,0 +1,45 @@
+version: '3'
+services:
+  web:
+    image: nginx
+    volumes:
+      - ./nginx/app.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+    ports:
+      - 80:80
+    networks:
+      - front
+  api:
+    container_name: api
+    build: '.'
+    volumes:
+      - ./:/node-app
+      - ./node_modules:/node-app/node_modules
+    environment:
+      NODE_ENV: development
+      USER_DB: root
+      PASSWORD_DB: example
+    depends_on:
+      - db
+    networks:
+      - front
+      - back
+  db:
+    image: mongo:3.4
+    command: [--auth]
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example       
+    volumes:
+        - './data/db:/data/db'
+    networks:
+      - back
+networks:
+  front:
+    driver: bridge
+  back:
+    driver: bridge
